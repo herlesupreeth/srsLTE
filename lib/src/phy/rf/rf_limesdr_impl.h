@@ -29,6 +29,7 @@
 
 #define DEVNAME_USB "LimeSDR-USB"
 #define DEVNAME_MINI "LimeSDR Mini"
+#define SRSLTE_MAX_CHANNELS 4
 
 SRSLTE_API int rf_lime_open(char* args, void** handler);
 
@@ -66,7 +67,7 @@ SRSLTE_API srslte_rf_info_t* rf_lime_get_info(void* h);
 
 SRSLTE_API void rf_lime_suppress_stdout(void* h);
 
-SRSLTE_API void rf_lime_register_error_handler(void* h, srslte_rf_error_handler_t error_handler, void* arg);
+SRSLTE_API void rf_lime_register_error_handler(void* h, srslte_rf_error_handler_t error_handler);
 
 SRSLTE_API double rf_lime_set_rx_freq(void* h, uint32_t ch, double freq);
 

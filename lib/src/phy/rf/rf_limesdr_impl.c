@@ -60,7 +60,6 @@ typedef struct {
   srslte_rf_info_t info;
 
   srslte_rf_error_handler_t lime_error_handler;
-  void*                     lime_error_handler_arg;
 
   bool      async_thread_running;
   pthread_t async_thread;
@@ -75,7 +74,7 @@ static void log_overflow(rf_lime_handler_t* h)
     srslte_rf_error_t error;
     bzero(&error, sizeof(srslte_rf_error_t));
     error.type = SRSLTE_RF_ERROR_OVERFLOW;
-    h->lime_error_handler(h->lime_error_handler_arg, error);
+    h->lime_error_handler(error);
   }
 }
 #endif
@@ -87,7 +86,7 @@ static void log_underflow(rf_lime_handler_t* h)
     srslte_rf_error_t error;
     bzero(&error, sizeof(srslte_rf_error_t));
     error.type = SRSLTE_RF_ERROR_UNDERFLOW;
-    h->lime_error_handler(h->lime_error_handler_arg, error);
+    h->lime_error_handler(error);
   }
 }
 #endif
@@ -99,7 +98,7 @@ static void log_late(rf_lime_handler_t* h)
     srslte_rf_error_t error;
     bzero(&error, sizeof(srslte_rf_error_t));
     error.type = SRSLTE_RF_ERROR_LATE;
-    h->lime_error_handler(h->lime_error_handler_arg, error);
+    h->lime_error_handler(error);
   }
 }
 #endif
@@ -109,7 +108,7 @@ static void log_late(rf_lime_handler_t* h)
 //        srslte_rf_error_t error;
 //        bzero(&error, sizeof(srslte_rf_error_t));
 //        error.type = SRSLTE_RF_ERROR_OTHER;
-//        h->lime_error_handler(h->lime_error_handler_arg, error);
+//        h->lime_error_handler(error);
 //    }
 //}
 
@@ -125,11 +124,10 @@ void rf_lime_suppress_stdout(void* h)
 #endif
 }
 
-void rf_lime_register_error_handler(void* h, srslte_rf_error_handler_t new_handler, void* arg)
+void rf_lime_register_error_handler(void* h, srslte_rf_error_handler_t new_handler)
 {
   rf_lime_handler_t* handler      = (rf_lime_handler_t*)h;
   handler->lime_error_handler     = new_handler;
-  handler->lime_error_handler_arg = arg;
 }
 
 #if HAVE_ASYNC_THREAD
@@ -431,7 +429,7 @@ int rf_lime_open_multi(char* args, void** h, uint32_t num_requested_channels)
     }
   }
 
-  for (uint16_t ch = 0; ch < handler->num_rx_channels; ch++) {
+  for (uint16_t ch = 0; ch < handler->num_tx_channels; ch++) {
     printf("Setup TX stream %d\n", (int)ch);
     handler->txStream[ch].channel             = ch;
     handler->txStream[ch].fifoSize            = 256 * 1024;
@@ -477,7 +475,7 @@ int rf_lime_open_multi(char* args, void** h, uint32_t num_requested_channels)
 
     // TX antenna
     if (txant_ptr) {
-      copy_subdev_string(txant_str, txant_ptr + strlen(rxant_arg));
+      copy_subdev_string(txant_str, txant_ptr + strlen(txant_arg));
       // Find the required path
       for (int i = 0; i < num_tx_antennas; i++) {
         if (strstr(txant_str, tx_ant_list[i])) {
@@ -489,12 +487,12 @@ int rf_lime_open_multi(char* args, void** h, uint32_t num_requested_channels)
 
     for (size_t i = 0; i < handler->num_tx_channels; i++)
       if (LMS_SetAntenna(sdr, LMS_CH_TX, i, ant_tx_path) != 0) {
-        printf("Failed to set tx antenna\n");
+        printf("Failed to set Tx antenna\n");
         return SRSLTE_ERROR;
       }
     for (size_t i = 0; i < handler->num_rx_channels; i++)
       if (LMS_SetAntenna(sdr, LMS_CH_RX, i, ant_rx_path) != 0) {
-        printf("Failed to set tx antenna\n");
+        printf("Failed to set Rx antenna\n");
         return SRSLTE_ERROR;
       }
   }
@@ -649,6 +647,7 @@ double rf_lime_set_rx_srate(void* h, double rate)
   handler->rx_rate = srate;
   printf("RX sampling rate: %.2f\n", srate / 1e6);
 
+
   if (stream_active) {
     rf_lime_start_rx_stream(handler, true);
   }
@@ -701,6 +700,7 @@ double rf_lime_set_tx_srate(void* h, double rate)
   handler->tx_rate = srate;
 
   if (handler->calibrate & CALIBRATE_FILTER) {
+    printf("Setting analog TX LPF BW to: %.2f\n", 30e6 / 1e6);
     for (size_t i = 0; i < handler->num_tx_channels; i++) {
       // Keep TX LPF open no matter the sampling rate
       if (LMS_SetLPFBW(handler->device, LMS_CH_TX, i, 30e6) != 0) {
