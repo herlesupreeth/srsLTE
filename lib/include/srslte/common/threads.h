@@ -31,6 +31,8 @@
 // Default priority for all threads below UHD threads
 #define DEFAULT_PRIORITY 60
 
+#define PER_THREAD_PRIO
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
