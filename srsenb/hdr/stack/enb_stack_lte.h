@@ -104,7 +104,7 @@ public:
   void process_pdus() override;
 
 private:
-  static const int STACK_MAIN_THREAD_PRIO = 2; // Use default high-priority below UHD
+  static const int STACK_MAIN_THREAD_PRIO = 3; // Use default high-priority below UHD
   // thread loop
   void run_thread() override;
   void stop_impl();
