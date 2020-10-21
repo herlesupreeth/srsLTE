@@ -59,6 +59,7 @@ bool threads_new_rt_cpu(pthread_t* thread, void* (*start_routine)(void*), void* 
 #ifdef PER_THREAD_PRIO
   if (prio_offset >= 0) {
     param.sched_priority = sched_get_priority_max(SCHED_FIFO) - prio_offset;
+    fprintf(stdout, "pthread sched priority set to %d\n", param.sched_priority);
     pthread_attr_init(&attr);
     if (pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED)) {
       perror("pthread_attr_setinheritsched");
@@ -73,6 +74,7 @@ bool threads_new_rt_cpu(pthread_t* thread, void* (*start_routine)(void*), void* 
     attr_enable = true;
   } else if (prio_offset == -1) {
     param.sched_priority = sched_get_priority_max(SCHED_FIFO) - DEFAULT_PRIORITY;
+    fprintf(stdout, "pthread sched priority set to %d\n", param.sched_priority);
     pthread_attr_init(&attr);
     if (pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED)) {
       perror("pthread_attr_setinheritsched");
@@ -90,6 +92,7 @@ bool threads_new_rt_cpu(pthread_t* thread, void* (*start_routine)(void*), void* 
   // All threads have normal priority except prio_offset=0,1,2,3,4
   if (prio_offset >= 0 && prio_offset < 5) {
     param.sched_priority = 50 - prio_offset;
+    fprintf(stdout, "pthread sched priority set to %d\n", param.sched_priority);
     if (pthread_attr_init(&attr)) {
       perror("pthread_attr_init");
     } else {
@@ -108,6 +111,7 @@ bool threads_new_rt_cpu(pthread_t* thread, void* (*start_routine)(void*), void* 
   } else {
 #endif
     param.sched_priority = 0;
+    fprintf(stdout, "pthread sched priority set to %d\n", param.sched_priority);
     if (pthread_attr_init(&attr)) {
       perror("pthread_attr_init");
     } else {

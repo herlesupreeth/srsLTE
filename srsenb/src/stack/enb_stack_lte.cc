@@ -158,8 +158,8 @@ int enb_stack_lte::init(const stack_args_t& args_, const rrc_cfg_t& rrc_cfg_)
             args.embms.enable);
 
   started = true;
+  fprintf(stdout,"eNB Stack Main thread\n");
   start(STACK_MAIN_THREAD_PRIO);
-
   return SRSLTE_SUCCESS;
 }
 

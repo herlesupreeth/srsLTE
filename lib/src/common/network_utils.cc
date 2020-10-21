@@ -521,6 +521,7 @@ rx_multisocket_handler::rx_multisocket_handler(std::string name_, srslte::log* l
     rxSockInfo("Failed to open control pipe\n");
     return;
   }
+  log_h->console("Network Utils thread\n");
   start(thread_prio);
 }
 

@@ -71,7 +71,7 @@ bool txrx::init(srslte::radio_interface_phy* radio_h_,
   if (worker_com->params.dl_channel_args.enable) {
     ul_channel = srslte::channel_ptr(new srslte::channel(worker_com->params.ul_channel_args, 1));
   }
-
+  log_h->console("TxRx thread\n");
   start(prio_);
   return true;
 }

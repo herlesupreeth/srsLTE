@@ -49,7 +49,7 @@ int prach_worker::init(const srslte_cell_t&      cell_,
   srslte_prach_set_detect_factor(&prach, 60);
 
   nof_sf = (uint32_t)ceilf(prach.T_tot * 1000);
-
+  log_h->console("PRACH worker thread\n");
   start(priority);
   initiated = true;
 
