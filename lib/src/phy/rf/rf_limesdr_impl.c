@@ -29,7 +29,7 @@
 #include "srslte/srslte.h"
 
 #define HAVE_ASYNC_THREAD 1
-#define FORCE_USB_FAN 0
+#define FORCE_USB_FAN 1
 #define DISABLE_CH_AFTER_CLOSE 1
 #define ALLOW_SUPPRESS_STDOUT 1
 
