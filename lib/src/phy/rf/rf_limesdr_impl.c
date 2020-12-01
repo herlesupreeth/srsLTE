@@ -33,9 +33,9 @@
 #define DISABLE_CH_AFTER_CLOSE 1
 #define ALLOW_SUPPRESS_STDOUT 1
 
-#define CALIBRATE_GFIR 4
-#define CALIBRATE_FILTER 2
-#define CALIBRATE_IQDC 1
+#define CALIBRATE_GFIR 0x04
+#define CALIBRATE_FILTER 0x02
+#define CALIBRATE_IQDC 0x01
 
 #define DIGITAL_GFIR_COEFF 0.95
 #define ANALOG_LPF_COEFF 1
@@ -695,7 +695,8 @@ double rf_lime_set_rx_srate(void* h, double rate)
     rf_lime_stop_rx_stream(handler);
   }
 
-  if (LMS_SetSampleRateDir(handler->device, LMS_CH_RX, rate, handler->dec_inter) != 0) {
+  // if (LMS_SetSampleRateDir(handler->device, LMS_CH_RX, rate, handler->dec_inter) != 0) {
+  if (LMS_SetSampleRate(handler->device, rate, handler->dec_inter) != 0) {
     printf("LMS_SetSampleRate: Failed to set RX sampling rate\n");
     return SRSLTE_ERROR;
   }
