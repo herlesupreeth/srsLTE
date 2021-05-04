@@ -258,7 +258,7 @@ static rf_dev_t dev_lime = {"limesdr",
                              rf_lime_recv_with_time,
                              rf_lime_recv_with_time_multi,
                              rf_lime_send_timed,
-                             .srslte_rf_send_timed_multi = rf_lime_send_timed_multi};
+                             .srsran_rf_send_timed_multi = rf_lime_send_timed_multi};
 
 #endif
 
