@@ -223,8 +223,29 @@ int bearer_cfg_handler::add_erab(uint8_t                                        
     cause.set_radio_network().value = asn1::s1ap::cause_radio_network_opts::unknown_erab_id;
     return SRSRAN_ERROR;
   }
-  uint8_t lcid  = erab_id - 2; // Map e.g. E-RAB 5 to LCID 3 (==DRB1)
-  uint8_t drbid = erab_id - 4;
+
+  uint32_t lcid;
+  // Check for used LCID, LCID for DRB 3-10
+  for (lcid = 3; lcid <= SRSRAN_N_RADIO_BEARERS; ++lcid) {
+    bool used = false;
+    for (std::map<uint8_t, erab_t>::iterator it = erabs.begin(); it != erabs.end(); ++it) {
+      if (it->second.lcid == lcid) {
+        // LCID already used so pick next LCID
+        used = true;
+        break;
+      }
+    }
+    if (used == false) {
+      break;
+    }
+  }
+  if (lcid >= SRSRAN_N_RADIO_BEARERS) {
+    logger->error("No logical channel available");
+    cause.set_radio_network().value = asn1::s1ap::cause_radio_network_opts::radio_res_not_available;
+    return SRSRAN_ERROR;
+  }
+
+  uint8_t drbid = erab_id - 4; // Map e.g. E-RAB 5 == DRB1
 
   auto qci_it = cfg->qci_cfg.find(qos.qci);
   if (qci_it == cfg->qci_cfg.end() or not qci_it->second.configured) {
@@ -243,6 +264,7 @@ int bearer_cfg_handler::add_erab(uint8_t                                        
   erabs[erab_id].qos_params = qos;
   erabs[erab_id].address    = addr;
   erabs[erab_id].teid_out   = teid_out;
+  erabs[erab_id].lcid       = lcid;
 
   if (addr.length() > 32) {
     logger->error("Only addresses with length <= 32 are supported");
@@ -375,7 +397,7 @@ srsran::expected<uint32_t> bearer_cfg_handler::add_gtpu_bearer(uint32_t         
   erab_t::gtpu_tunnel bearer;
   bearer.teid_out                   = teid_out;
   bearer.addr                       = addr;
-  srsran::expected<uint32_t> teidin = gtpu->add_bearer(rnti, erab.id - 2, addr, teid_out, props);
+  srsran::expected<uint32_t> teidin = gtpu->add_bearer(rnti, erab.lcid, addr, teid_out, props);
   if (teidin.is_error()) {
     logger->error("Adding erab_id=%d to GTPU", erab_id);
     return srsran::default_error_t();
@@ -390,7 +412,7 @@ void bearer_cfg_handler::rem_gtpu_bearer(uint32_t erab_id)
   auto it = erabs.find(erab_id);
   if (it != erabs.end()) {
     // Map e.g. E-RAB 5 to LCID 3 (==DRB1)
-    gtpu->rem_bearer(rnti, erab_id - 2);
+    gtpu->rem_bearer(rnti, it->second.lcid);
   } else {
     logger->error("Removing erab_id=%d to GTPU\n", erab_id);
   }
